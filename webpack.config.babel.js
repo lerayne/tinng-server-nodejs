@@ -6,8 +6,6 @@ import webpack from 'webpack'
 import path from 'path'
 import getExternals from 'webpack-node-externals'
 
-console.log('__dirname', __dirname)
-
 export default function (env) {
 
     const babelOptions = {

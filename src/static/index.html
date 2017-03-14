@@ -12,6 +12,13 @@
         #messages li { padding: 5px 10px; }
         #messages li:nth-child(odd) { background: #eee; }
     </style>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io()
+
+        socket.on('new-message', msg => console.log('received from server:', msg))
+    </script>
 </head>
 <body>
 <ul id="messages"></ul>

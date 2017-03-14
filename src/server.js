@@ -1,15 +1,11 @@
 /**
- * Created by lerayne on 14.03.17.
+ * Created by lerayne on 14.03.17
+ * @flow
  */
 
-import express from 'express'
-import http from 'http'
-import socketIO from 'socket.io'
-import path from 'path'
-
-const app = express()
-const server = http.Server(app)
-const io = socketIO(server)
+const app = require('express')()
+const server = require('http').createServer(app)
+const io = require('socket.io')(server)
 
 const PORT = process.env.port || 3001
 
@@ -19,15 +15,31 @@ app.get('/', (req, res) => {
 
 app.get('/test1', (req, res) => {
     //res.end(__dirname)
-    res.sendFile('/index.html', {root: __dirname})
+    res.sendFile('/static/index.html', {root: __dirname})
 })
 
-server.listen(PORT, () => {
+io.on('connection', socket => {
+    console.log('a user connected:', socket.client.id)
+
+    socket.on('chat-message', msg => {
+        console.log('message:', msg)
+        socket.emit('new-message', msg)
+    })
+
+    socket.on('disconnect', () => {
+        console.log(`user ${socket.client.id} disconnected`)
+    })
+})
+
+server.listen(PORT.toString(), () => {
     console.log(`Server listening on ${PORT}`)
 })
 
-
+/*
 class TestClass {
+
+    var1 = 0
+
     constructor() {
         this.var1 = 1
     }
@@ -36,11 +48,16 @@ class TestClass {
         var3: 3
     }
 
-    method1(arg1: String, arg2: Boolean) {
+    method1(arg1: string, arg2?: bool) {
         return 4
     }
 
     method2() {
-        ::this.method1()
+        this.method1('string', true)
     }
 }
+
+const num: string = 'hello!'
+
+const test = new TestClass()
+test.method1('string')*/
