@@ -17,7 +17,9 @@ io.on('connection', socket => {
 
     socket.on('chat-message', msg => {
         console.log('message:', msg)
-        socket.emit('new-message', msg)
+        socket.emit('new-message', {
+            payload: msg.payload
+        })
     })
 
     socket.on('disconnect', () => {
