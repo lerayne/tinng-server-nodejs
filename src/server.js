@@ -6,23 +6,31 @@ import 'babel-polyfill'
 const app = require('express')()
 const server = require('http').createServer(app)
 const socketIo = require('socket.io')(server)
-//import socketioJwt from 'socketio-jwt'
 import jwt from 'jsonwebtoken'
+import bodyParser from 'body-parser'
+//import cookieParser from 'cookie-parser'
+/*import socketioJwt from 'socketio-jwt'*/
+
+//config
 import {secretKey} from 'config'
 
+//local modules
+import {getLoginToken} from './modules/login'
+import {query} from './modules/db'
+
+app.use(bodyParser.json())
+app.use(bodyParser.text())
+app.use(bodyParser.urlencoded({extended:false}))
+
+// Direct http access response
 app.get('/', (req, res) => {
-    res.end('TINNG server working')
+    res.end('TINNG server is working')
 })
 
-// socketIo.set('authorization', socketioJwt.authorize({
-//     secret: secretKey,
-//     handshake: true
-// }))
+// post login
+app.post('/login', getLoginToken)
 
-function setListeners(connection, user){
-
-}
-
+// default user (stays this way if not logged in)
 let user = {
     id: -1,
     name:'anonymous',
@@ -30,10 +38,18 @@ let user = {
     role: 'anonymous'
 }
 
+// main socket routine
 socketIo.on('connection', connection => {
+
+    /**
+     * TESTING SOCKET.IO
+     */
 
     console.log(`new user ${connection.client.id} connected`)
 
+    /**
+     * Custom 'authenticate' request
+     */
     connection.on('authenticate', msg => {
 
         jwt.verify(msg.token, secretKey, (err, decodedUser) => {
@@ -51,7 +67,7 @@ socketIo.on('connection', connection => {
     connection.on('chat-message', msg => {
         console.log('message:', msg)
 
-        if (user.role != undefined && user.role !== 'anonumous') {
+        if (user.role !== undefined && user.role !== 'anonumous') {
             console.log('user can post messages')
             connection.emit('new-message', {
                 payload: msg.payload
@@ -63,35 +79,6 @@ socketIo.on('connection', connection => {
         console.log(`user ${connection.client.id} disconnected`)
     })
 })
-
-/*socketIo.on('connection', socketioJwt.authorize({
-    secret: secretKey,
-    timeout: 3000,
-})).on('authenticated', connection => {
-    console.log('a user connected:', connection.client.id, connection.decoded_token)
-
-
-
-
-
-}).on('unauthorized', a => {
-    console.log('unauthorized', a)
-})*/
-
-/*socketIo.on('connection', connection => {
-    console.log('a user connected:', connection.client.id, connection.client.conn.request.decoded_token)
-
-    connection.on('chat-message', msg => {
-        console.log('message:', msg)
-        socket.emit('new-message', {
-            payload: msg.payload
-        })
-    })
-
-    connection.on('disconnect', () => {
-        console.log(`user ${connection.client.id} disconnected`)
-    })
-})*/
 
 const PORT = process.env.PORT || 3001
 

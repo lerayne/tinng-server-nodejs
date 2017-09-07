@@ -22,6 +22,8 @@ module.exports = function (env) {
     return {
         target: 'node',
 
+        devtool: 'inline-source-map',
+
         node: {
             __dirname: false,
             __filename: false,
