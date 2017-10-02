@@ -5,7 +5,6 @@
 import bcrypt from 'bcryptjs'
 import url from 'url'
 import jwt from 'jsonwebtoken'
-import getUserAuth from '../api/getUserAuth'
 import {keyExpiresIn, secretKey} from 'config'
 
 export function getJWToken(payload, optionsOverride = {}){
@@ -25,20 +24,16 @@ export function getJWToken(payload, optionsOverride = {}){
     })
 }
 
-export function checkUserAuth(req){
+export function verifyJWToken(token){
     return new Promise((resolve, reject) => {
 
-        if (!req.cookies.access_token) {
-            resolve(false)
-        } else {
-            jwt.verify(req.cookies.access_token, secretKey, (err, decoded) => {
-                if (err) {
-                    resolve(false)
-                } else {
-                    resolve(decoded)
-                }
-            })
-        }
+        jwt.verify(token, secretKey, (err, decoded) => {
+            if (err) {
+                reject(err)
+            } else {
+                resolve(decoded)
+            }
+        })
     })
 }
 
@@ -49,7 +44,7 @@ export function checkUserAuth(req){
  * @param insecureUser - insecure until password hash is not removed
  * @returns {Promise.<void>}
  */
-export async function createAccessToken(insecureUser) {
+export async function createUserToken(insecureUser) {
 
     try {
         // removing password hash
@@ -69,33 +64,6 @@ export async function createAccessToken(insecureUser) {
     } catch (error) {
         console.error('grantAccess:', error)
         throw error
-    }
-}
-
-export async function getLoginToken(req, res){
-    try {
-
-        res.header('Access-Control-Allow-Origin', '*')
-
-        const bodyJson = JSON.parse(req.body)
-
-        const user = await getUserAuth(bodyJson.login)
-
-        if (!user) {
-            res.status(401).send('Login or password not correct')
-        } else {
-            const passwordCorrect = await bcrypt.compare(bodyJson.password, user.password_hash)
-
-            if (!passwordCorrect) {
-                res.status(401).send('Login or password not correct')
-            } else {
-                const token = await createAccessToken(user)
-                console.log('token', token)
-                res.send(token)
-            }
-        }
-    } catch (err) {
-        res.status(500).send('getLoginToken error')
     }
 }
 

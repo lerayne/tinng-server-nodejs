@@ -7,7 +7,8 @@ import {query} from '../modules/db'
 export default async function getUserAuth(loginEntry) {
     const SQLQuery = `
         SELECT 
-            id, 
+            id,
+            name, 
             email, 
             password_hash 
         FROM users 

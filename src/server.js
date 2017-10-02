@@ -11,24 +11,27 @@ import bodyParser from 'body-parser'
 //import cookieParser from 'cookie-parser'
 /*import socketioJwt from 'socketio-jwt'*/
 
+//local modules
+import {query} from './modules/db'
+
+import {loginPOST} from './api/login'
+import {checkAuthPOST} from './api/checkAuth'
+
 //config
 import {secretKey} from 'config'
-
-//local modules
-import {getLoginToken} from './modules/login'
-import {query} from './modules/db'
 
 app.use(bodyParser.json())
 app.use(bodyParser.text())
 app.use(bodyParser.urlencoded({extended:false}))
 
+// post login
+app.post('/login', loginPOST)
+app.post('/checkAuth', checkAuthPOST)
+
 // Direct http access response
 app.get('/', (req, res) => {
     res.end('TINNG server is working')
 })
-
-// post login
-app.post('/login', getLoginToken)
 
 // default user (stays this way if not logged in)
 let user = {
